@@ -76,7 +76,11 @@
 import { getOrders } from "../actions/orders";
 import OrdersClient from "@/components/orders/OrdersClient";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export default async function OrdersPage() {
+    await new Promise((res) => setTimeout(res, 1000));
+
     const orders = await getOrders();
 
     return <OrdersClient orders={orders} />;
