@@ -129,7 +129,7 @@ export default async function OrderDetailsPage({
                             Order ID
                         </p>
                         <p className="text-zinc-300 text-xs break-all mt-1">
-                            {order._id.toString()}
+                            {order._id?.toString()}
                         </p>
                     </div>
 
@@ -185,7 +185,7 @@ export default async function OrderDetailsPage({
                             <form
                                 action={updateOrderStatus.bind(
                                     null,
-                                    order._id.toString(),
+                                    order._id?.toString() || "",
                                     nextStatus
                                 )}
                             >
@@ -200,7 +200,7 @@ export default async function OrderDetailsPage({
                             <form
                                 action={deleteOrder.bind(
                                     null,
-                                    order._id.toString(),
+                                    order._id?.toString() || "",
                                     order.status
                                 )}
                             >
