@@ -1,9 +1,14 @@
+"use client";
+
 import StatusBadge from "./StatusBadge";
 import Link from "next/link";
 import { updateOrderStatus, deleteOrder } from "@/app/actions/orders";
 import type { Order } from "@/types/order";
+import { useTransition } from "react";
 
 export default function OrderCard({ order }: { order: Order }) {
+  const [isPending, startTransition] = useTransition();
+
   const nextStatus =
     order.status === "PENDING"
       ? "COOKING"
@@ -11,54 +16,85 @@ export default function OrderCard({ order }: { order: Order }) {
       ? "READY"
       : null;
 
+  const handleStatusUpdate = async (status: Order["status"]) => {
+    startTransition(async () => {
+      await updateOrderStatus(order._id!.toString(), status);
+    });
+  };
+
+  const handleDelete = async () => {
+    startTransition(async () => {
+      await deleteOrder(order._id!.toString(), order.status);
+    });
+  };
+
   return (
-    <div className="border p-4 rounded-lg shadow-sm">
-      <div className="flex justify-between items-center">
-        <h2 className="font-semibold">Table #{order.tableNumber}</h2>
+    <div className={`bg-[#181820] border border-zinc-800 p-4 rounded-xl shadow-lg transition-all hover:border-zinc-700 ${isPending ? "opacity-50" : ""}`}>
+      <div className="flex justify-between items-start mb-3">
+        <div>
+          <h3 className="font-bold text-white text-lg">Table #{order.tableNumber}</h3>
+          <p className="text-zinc-500 text-xs">{new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+        </div>
         <StatusBadge status={order.status} />
       </div>
 
-      <p className="mt-2 text-gray-600">{order.items}</p>
+      <div className="bg-[#111118] p-3 rounded-lg border border-zinc-800/50 mb-4">
+        <p className="text-zinc-300 text-sm leading-relaxed">{order.items}</p>
+      </div>
 
-      <Link
-        href={`/orders/${order._id}`}
-        className="text-sm underline mt-2 block"
-      >
-        View Details
-      </Link>
-
-      <div className="flex gap-2 mt-4">
-        {nextStatus && (
-            <form
-                action={updateOrderStatus.bind(
-                null,
-                order._id!.toString(),
-                nextStatus
-                )}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex gap-2">
+          {nextStatus && (
+            <button
+              onClick={() => handleStatusUpdate(nextStatus)}
+              disabled={isPending}
+              className="bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold border border-blue-500/20 transition-all"
             >
-                <button className={`bg-blue-500 text-white  px-3 py-1 rounded ${
-                order.status === "READY" ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-                disabled={order.status === "READY"}
-                >
-                    Move → {nextStatus}
-                </button>
-            </form>
-        )}
-
-        {order.status === "PENDING" && (
-          <form
-            action={deleteOrder.bind(
-              null,
-              order._id!.toString(),
-              order.status
-            )}
-          >
-            <button className="bg-red-500 text-white px-3 py-1 rounded">
-              Delete
+              Start {nextStatus}
             </button>
-          </form>
-        )}
+          )}
+
+          {order.status === "READY" && (
+            <button
+              onClick={() => handleStatusUpdate("COMPLETED")}
+              disabled={isPending}
+              className="bg-green-600/10 hover:bg-green-600 text-green-400 hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold border border-green-500/20 transition-all"
+            >
+              Complete
+            </button>
+          )}
+        </div>
+
+        <div className="flex gap-2">
+          {order.status === "PENDING" && (
+            <>
+              <button
+                onClick={() => handleStatusUpdate("CANCELLED")}
+                disabled={isPending}
+                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={isPending}
+                className="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold border border-red-500/20 transition-all"
+              >
+                Delete
+              </button>
+            </>
+          )}
+          
+          <Link
+            href={`/orders/${order._id}`}
+            className="p-1.5 hover:bg-zinc-800 rounded-lg transition-colors"
+            title="View Details"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+          </Link>
+        </div>
       </div>
     </div>
   );

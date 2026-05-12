@@ -73,15 +73,24 @@
 //     );
 // }
 
-import { getOrders } from "../actions/orders";
+import { getOrders, getAllOrders } from "../actions/orders";
 import OrdersClient from "@/components/orders/OrdersClient";
+import { calculateAveragePrepTime, calculateAverageDeliveryTime, getDailyStats } from "@/lib/kpi-utils";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
 export default async function OrdersPage() {
-    await new Promise((res) => setTimeout(res, 1000));
+    const [activeOrders, allOrders] = await Promise.all([
+        getOrders(),
+        getAllOrders(),
+    ]);
 
-    const orders = await getOrders();
+    const kpis = {
+        avgPrepTime: calculateAveragePrepTime(allOrders),
+        avgDeliveryTime: calculateAverageDeliveryTime(allOrders),
+        dailyStats: getDailyStats(allOrders),
+    };
 
-    return <OrdersClient orders={orders} />;
+    return <OrdersClient orders={activeOrders} kpis={kpis} />;
 }
