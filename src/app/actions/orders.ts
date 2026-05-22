@@ -151,6 +151,14 @@ export async function updateOrderStatus(
     return { success: true };
 }
 
+/** For `<form action>` — Next.js requires void return */
+export async function updateOrderStatusForm(
+    id: string,
+    status: Order["status"]
+): Promise<void> {
+    await updateOrderStatus(id, status);
+}
+
 export async function deleteOrder(
     id: string,
     status: Order["status"]
@@ -178,6 +186,14 @@ export async function deleteOrder(
     revalidatePath("/orders");
     revalidatePath("/reports");
     return { success: true };
+}
+
+/** For `<form action>` — Next.js requires void return */
+export async function deleteOrderForm(
+    id: string,
+    status: Order["status"]
+): Promise<void> {
+    await deleteOrder(id, status);
 }
 
 export async function archiveOrder(id: string) {

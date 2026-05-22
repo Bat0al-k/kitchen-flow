@@ -67,7 +67,11 @@
 // }
 
 import Link from "next/link";
-import { getOrderById, updateOrderStatus, deleteOrder } from "../../actions/orders";
+import {
+    getOrderById,
+    updateOrderStatusForm,
+    deleteOrderForm,
+} from "../../actions/orders";
 import { notFound } from "next/navigation";
 
 export default async function OrderDetailsPage({
@@ -183,7 +187,7 @@ export default async function OrderDetailsPage({
                         {/* UPDATE */}
                         {nextStatus && (
                             <form
-                                action={updateOrderStatus.bind(
+                                action={updateOrderStatusForm.bind(
                                     null,
                                     order._id?.toString() || "",
                                     nextStatus
@@ -197,7 +201,7 @@ export default async function OrderDetailsPage({
 
                         {order.status === "READY" && (
                             <form
-                                action={updateOrderStatus.bind(
+                                action={updateOrderStatusForm.bind(
                                     null,
                                     order._id?.toString() || "",
                                     "COMPLETED"
@@ -212,7 +216,7 @@ export default async function OrderDetailsPage({
                         {/* DELETE */}
                         {order.status === "PENDING" && (
                             <form
-                                action={deleteOrder.bind(
+                                action={deleteOrderForm.bind(
                                     null,
                                     order._id?.toString() || "",
                                     order.status
