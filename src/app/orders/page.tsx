@@ -76,14 +76,20 @@
 import { getOrders, getAllOrders } from "../actions/orders";
 import OrdersClient from "@/components/orders/OrdersClient";
 import { calculateAveragePrepTime, calculateAverageDeliveryTime, getDailyStats } from "@/lib/kpi-utils";
+import { getCurrentUser } from "../actions/auth";
+import { seedUsers } from "../actions/seed";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function OrdersPage() {
-    const [activeOrders, allOrders] = await Promise.all([
+    // Auto-seed default credentials
+    await seedUsers().catch(console.error);
+
+    const [activeOrders, allOrders, user] = await Promise.all([
         getOrders(),
         getAllOrders(),
+        getCurrentUser(),
     ]);
 
     const kpis = {
@@ -92,5 +98,5 @@ export default async function OrdersPage() {
         dailyStats: getDailyStats(allOrders),
     };
 
-    return <OrdersClient orders={activeOrders} kpis={kpis} />;
-}
+    return <OrdersClient orders={activeOrders} kpis={kpis} user={user} />;
+}

@@ -5,9 +5,13 @@ import Link from "next/link";
 import { updateOrderStatus, deleteOrder } from "@/app/actions/orders";
 import type { Order } from "@/types/order";
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function OrderCard({ order }: { order: Order }) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const nextStatus =
     order.status === "PENDING"
@@ -17,14 +21,26 @@ export default function OrderCard({ order }: { order: Order }) {
       : null;
 
   const handleStatusUpdate = async (status: Order["status"]) => {
+    setActionError(null);
     startTransition(async () => {
-      await updateOrderStatus(order._id!.toString(), status);
+      const result = await updateOrderStatus(order._id!.toString(), status);
+      if (result && "error" in result) {
+        setActionError(result.error);
+        return;
+      }
+      router.refresh();
     });
   };
 
   const handleDelete = async () => {
+    setActionError(null);
     startTransition(async () => {
-      await deleteOrder(order._id!.toString(), order.status);
+      const result = await deleteOrder(order._id!.toString(), order.status);
+      if (result && "error" in result) {
+        setActionError(result.error);
+        return;
+      }
+      router.refresh();
     });
   };
 
@@ -41,6 +57,10 @@ export default function OrderCard({ order }: { order: Order }) {
       <div className="bg-[#111118] p-3 rounded-lg border border-zinc-800/50 mb-4">
         <p className="text-zinc-300 text-sm leading-relaxed">{order.items}</p>
       </div>
+
+      {actionError && (
+        <p className="text-red-400 text-xs mb-2">{actionError}</p>
+      )}
 
       <div className="flex items-center justify-between gap-2">
         <div className="flex gap-2">

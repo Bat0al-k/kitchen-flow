@@ -195,6 +195,20 @@ export default async function OrderDetailsPage({
                             </form>
                         )}
 
+                        {order.status === "READY" && (
+                            <form
+                                action={updateOrderStatus.bind(
+                                    null,
+                                    order._id?.toString() || "",
+                                    "COMPLETED"
+                                )}
+                            >
+                                <button className="bg-green-600 hover:bg-green-500 shadow-md shadow-green-500/10 text-white text-sm px-4 py-2 rounded-lg transition">
+                                    Complete
+                                </button>
+                            </form>
+                        )}
+
                         {/* DELETE */}
                         {order.status === "PENDING" && (
                             <form

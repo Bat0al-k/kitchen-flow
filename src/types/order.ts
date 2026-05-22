@@ -9,4 +9,8 @@ export type Order = {
     completedAt?: string;
     cancelledAt?: string;
     shiftId?: string;
-};
+    isArchived?: boolean;
+    archivedAt?: string;
+    archivedBy?: string;
+};
+

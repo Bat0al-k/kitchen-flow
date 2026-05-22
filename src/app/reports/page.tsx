@@ -3,10 +3,24 @@ import Link from "next/link";
 import { calculateAveragePrepTime, calculateAverageDeliveryTime, getPeakHour, getDailyStats } from "@/lib/kpi-utils";
 import ExportButton from "@/components/reports/ExportButton";
 import ReportsCharts from "@/components/reports/ReportsCharts";
+import { getCurrentUser } from "@/app/actions/auth";
+import Navbar from "@/components/Navbar";
+
 
 export const dynamic = "force-dynamic";
 
 export default async function ReportsPage({ searchParams }: { searchParams: Promise<{ range?: string }> }) {
+    const user = await getCurrentUser();
+    
+    // Fallback security check
+    if (!user || user.role !== "ADMIN") {
+        return (
+            <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center p-6">
+                <p className="text-zinc-400">Access Denied. Please log in as Admin.</p>
+            </div>
+        );
+    }
+
     const allOrders = await getAllOrders();
     const { range: rawRange } = await searchParams;
     
@@ -31,32 +45,33 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0a0f] text-white p-6">
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-white">Management Reports</h1>
-                    <p className="text-zinc-400 text-sm">Business analytics and performance metrics</p>
-                </div>
-                <div className="flex gap-3">
-                    <div className="flex bg-zinc-900 rounded-xl p-1 border border-zinc-800">
-                        <Link 
-                            href="/reports?range=today" 
-                            className={`px-4 py-1.5 rounded-lg text-sm transition-all ${range === 'today' ? 'bg-blue-600 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
-                        >
-                            Today
-                        </Link>
-                        <Link 
-                            href="/reports?range=all" 
-                            className={`px-4 py-1.5 rounded-lg text-sm transition-all ${range === 'all' ? 'bg-blue-600 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
-                        >
-                            All Time
-                        </Link>
+        <div className="min-h-screen bg-[#0a0a0f] text-white">
+            {/* Global Dynamic Navbar */}
+            <Navbar user={user} />
+
+            <div className="p-6 max-w-7xl mx-auto">
+                <div className="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold text-white">Management Reports</h1>
+                        <p className="text-zinc-400 text-sm">Business analytics and performance metrics</p>
                     </div>
-                    <Link href="/orders" className="text-zinc-400 hover:text-white transition-colors text-sm font-medium px-4 py-2 bg-zinc-900 rounded-xl border border-zinc-800">
-                        ← Back
-                    </Link>
+                    <div className="flex gap-3">
+                        <div className="flex bg-zinc-900 rounded-xl p-1 border border-zinc-800">
+                            <Link 
+                                href="/reports?range=today" 
+                                className={`px-4 py-1.5 rounded-lg text-sm transition-all ${range === 'today' ? 'bg-blue-600 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+                            >
+                                Today
+                            </Link>
+                            <Link 
+                                href="/reports?range=all" 
+                                className={`px-4 py-1.5 rounded-lg text-sm transition-all ${range === 'all' ? 'bg-blue-600 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+                            >
+                                All Time
+                            </Link>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
             {/* KPI GRID */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -142,5 +157,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
                 </div>
             </div>
         </div>
+    </div>
     );
+
 }

@@ -5,6 +5,8 @@ import { Order } from "@/types/order";
 import { ObjectId } from "mongodb";
 import { revalidatePath } from "next/cache";
 import { getActiveShift } from "./shifts";
+import { getCurrentUser } from "./auth";
+import { logAction } from "@/lib/audit-log";
 
 export async function createOrder(formData: FormData) {
     const tableNumber = Number(formData.get("tableNumber"));
@@ -17,17 +19,21 @@ export async function createOrder(formData: FormData) {
     }
 
     const activeShift = await getActiveShift();
+    const user = await getCurrentUser();
+    const performedBy = user ? `${user.email} (${user.role})` : "WAITER";
 
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
 
-    await db.collection("orders").insertOne({
+    const result = await db.collection("orders").insertOne({
         tableNumber,
         items,
         status: "PENDING",
         createdAt: new Date().toISOString(),
         shiftId: activeShift?._id,
     });
+
+    await logAction("order created", performedBy, result.insertedId.toString());
 
     revalidatePath("/orders");
     revalidatePath("/reports");
@@ -75,9 +81,10 @@ export async function getCompletedOrders(): Promise<Order[]> {
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
 
+    // Hide archived orders from the completed orders list
     const orders = await db
         .collection("orders")
-        .find({ status: "COMPLETED" })
+        .find({ status: "COMPLETED", isArchived: { $ne: true } })
         .sort({ completedAt: -1 })
         .toArray();
 
@@ -113,7 +120,23 @@ export async function getAllOrders(): Promise<Order[]> {
     })) as unknown as Order[];
 }
 
-export async function updateOrderStatus(id: string, status: Order["status"]) {
+// export async function updateOrderStatus(id: string, status: Order["status"]) {
+//     const user = await getCurrentUser();
+
+//     // Authorization: Waiters (unauthenticated) can only mark READY -> COMPLETED.
+//     if (status !== "COMPLETED") {
+//         if (!user || (user.role !== "ADMIN" && user.role !== "SHIFT_LEADER")) {
+//             throw new Error("Unauthorized: Only shift leaders or admins can modify cooking workflow.");
+//         }
+//     }
+
+export async function updateOrderStatus(
+    id: string,
+    status: Order["status"]
+): Promise<{ success: true } | { error: string }> {
+    const user = await getCurrentUser();
+    
+
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
 
@@ -130,6 +153,9 @@ export async function updateOrderStatus(id: string, status: Order["status"]) {
         { $set: updateData }
     );
 
+    const performedBy = user ? `${user.email} (${user.role})` : "WAITER";
+    await logAction(`order status updated to ${status}`, performedBy, id);
+
     revalidatePath("/orders");
     revalidatePath("/orders/completed");
     revalidatePath("/reports");
@@ -137,6 +163,11 @@ export async function updateOrderStatus(id: string, status: Order["status"]) {
 
 export async function deleteOrder(id: string, status: Order["status"]) {
     if (status !== "PENDING") return;
+
+    const user = await getCurrentUser();
+    if (!user || (user.role !== "ADMIN" && user.role !== "SHIFT_LEADER")) {
+        throw new Error("Unauthorized: Only shift leaders or admins can cancel active orders.");
+    }
 
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
@@ -151,6 +182,34 @@ export async function deleteOrder(id: string, status: Order["status"]) {
         }
     );
 
+    await logAction("order cancelled (deleted)", `${user.email} (${user.role})`, id);
+
     revalidatePath("/orders");
     revalidatePath("/reports");
-}
+}
+
+export async function archiveOrder(id: string) {
+    const user = await getCurrentUser();
+    if (!user || user.role !== "ADMIN") {
+        throw new Error("Unauthorized: Only admins can archive completed orders.");
+    }
+
+    const client = await clientPromise;
+    const db = client.db(process.env.MONGODB_DB);
+
+    await db.collection("orders").updateOne(
+        { _id: new ObjectId(id) },
+        { 
+            $set: { 
+                isArchived: true,
+                archivedAt: new Date().toISOString(),
+                archivedBy: user.email
+            } 
+        }
+    );
+
+    await logAction("order archived", `${user.email} (${user.role})`, id);
+
+    revalidatePath("/orders/completed");
+    revalidatePath("/reports");
+}
