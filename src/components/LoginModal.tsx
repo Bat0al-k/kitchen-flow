@@ -138,8 +138,8 @@ export default function LoginModal({ onClose }: LoginModalProps) {
                         token,
                         fingerprintJson
                     );
-                    if (result?.error) {
-                        setError(result.error);
+                    if (result && "error" in result) {
+                        setError(result.error ?? "Setup failed.");
                         setStep("ACCOUNT");
                         return;
                     }
@@ -179,8 +179,8 @@ export default function LoginModal({ onClose }: LoginModalProps) {
                             token,
                             fingerprintJson
                         );
-                        if (result?.error) {
-                            setError(result.error);
+                        if (result && "error" in result) {
+                            setError(result.error ?? "Setup failed.");
                             setStep("PIN_WAIT");
                             return;
                         }
@@ -206,13 +206,17 @@ export default function LoginModal({ onClose }: LoginModalProps) {
 
         startTransition(async () => {
             const saved = await saveSetupPassword(selectedAccount.id, password);
-            if (saved.error) {
+            if ("error" in saved) {
                 setError(saved.error);
                 return;
             }
             const gen = await startPinGeneration(selectedAccount.id, "SETUP");
-            if (gen.error || !gen.setupToken) {
+            if ("error" in gen) {
                 setError(gen.error ?? "Could not generate PIN.");
+                return;
+            }
+            if (!gen.setupToken) {
+                setError("Could not generate PIN.");
                 return;
             }
             await runPinRevealFlow(gen.setupToken);
@@ -231,8 +235,8 @@ export default function LoginModal({ onClose }: LoginModalProps) {
                 pin,
                 fingerprintJson
             );
-            if (result?.error) {
-                setError(result.error);
+            if (result && "error" in result) {
+                setError(result.error ?? "Login failed.");
                 return;
             }
             router.refresh();
@@ -248,8 +252,8 @@ export default function LoginModal({ onClose }: LoginModalProps) {
                 selectedAccount.id,
                 fingerprintJson
             );
-            if (result?.error) {
-                setError(result.error);
+            if (result && "error" in result) {
+                setError(result.error ?? "Request failed.");
                 return;
             }
             setResetRequested(true);

@@ -58,7 +58,7 @@ export default function AdminAuthPanel() {
         setMessage(null);
         startTransition(async () => {
             const result = await approvePinReset(id);
-            if (result.error) {
+            if ("error" in result) {
                 setMessage(result.error);
             } else {
                 setMessage(result.message ?? "Approved.");
