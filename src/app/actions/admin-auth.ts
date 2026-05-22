@@ -1,6 +1,6 @@
 "use server";
 
-import { ObjectId, type Document, type UpdateFilter } from "mongodb";
+import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { auth } from "@/auth";
 import { authErrorMessage } from "@/lib/auth-errors";
@@ -145,16 +145,18 @@ export async function rejectPinReset(requestId: string) {
 export async function removeUserDevice(targetUserId: string, deviceId: string) {
     const admin = await requireAdmin();
     const users = await getUsersCollection();
-    const pullUpdate: UpdateFilter<Document> = {
-        $pull: { deviceIds: deviceId },
-    };
-    const result = await users.updateOne(
-        { _id: new ObjectId(targetUserId) },
-        pullUpdate
-    );
-    if (result.matchedCount === 0) {
+    const user = await users.findOne({ _id: new ObjectId(targetUserId) });
+    if (!user) {
         return { error: "User not found." };
     }
+
+    const deviceIds = ((user.deviceIds as string[]) ?? []).filter(
+        (id) => id !== deviceId
+    );
+    await users.updateOne(
+        { _id: new ObjectId(targetUserId) },
+        { $set: { deviceIds } }
+    );
     await logAction("DEVICE_REMOVED", admin.id!, `${targetUserId}:${deviceId}`);
     return { success: true };
 }
