@@ -15,6 +15,7 @@ import {
     updateLoginHeartbeat,
 } from "@/lib/auth-service";
 import { hashDeviceFingerprint } from "@/lib/auth-crypto";
+import type { ActionResult, PinGenerationResult } from "@/types/action-results";
 import type { DeviceFingerprintPayload, UserRole } from "@/types/user";
 
 function parseFingerprint(raw: string): DeviceFingerprintPayload | null {
@@ -33,11 +34,17 @@ export async function checkAccountStatus(userId: string) {
     return getAccountStatus(userId);
 }
 
-export async function saveSetupPassword(userId: string, password: string) {
+export async function saveSetupPassword(
+    userId: string,
+    password: string
+): Promise<ActionResult> {
     return setupPassword(userId, password);
 }
 
-export async function startPinGeneration(userId: string, mode: "SETUP" | "DELIVERY") {
+export async function startPinGeneration(
+    userId: string,
+    mode: "SETUP" | "DELIVERY"
+): Promise<PinGenerationResult> {
     const purpose = mode === "SETUP" ? "SETUP" : "DELIVERY";
     const result = await generateAndDeliverPin(userId, purpose);
     if ("error" in result) {
@@ -65,7 +72,7 @@ export async function loginWithPin(
     userId: string,
     pin: string,
     fingerprintJson: string
-) {
+): Promise<ActionResult> {
     const fingerprint = parseFingerprint(fingerprintJson);
     if (!fingerprint) {
         return { error: "Invalid device fingerprint." };
@@ -100,7 +107,7 @@ export async function finishSetupLogin(
     userId: string,
     setupToken: string,
     fingerprintJson: string
-) {
+): Promise<ActionResult> {
     const fingerprint = parseFingerprint(fingerprintJson);
     if (!fingerprint) {
         return { error: "Invalid device fingerprint." };
@@ -134,7 +141,7 @@ export async function finishSetupLogin(
 export async function submitForgotPinRequest(
     userId: string,
     fingerprintJson: string
-) {
+): Promise<ActionResult> {
     const fingerprint = parseFingerprint(fingerprintJson);
     if (!fingerprint) {
         return { error: "Invalid device fingerprint." };

@@ -125,9 +125,10 @@ export async function registerDevice(
         return { ok: false, code: "DEVICE_LIMIT_REACHED" };
     }
     const users = await getUsersCollection();
+    const deviceIds = [...(user.deviceIds ?? []), deviceHash];
     await users.updateOne(
         { _id: user._id },
-        { $push: { deviceIds: deviceHash } }
+        { $set: { deviceIds } }
     );
     return { ok: true };
 }
@@ -486,7 +487,7 @@ export async function migrateLegacyUser(doc: Record<string, unknown>) {
     const defaults = defaultUserFields(role);
     const users = await getUsersCollection();
     await users.updateOne(
-        { _id: doc._id },
+        { _id: new ObjectId(String(doc._id)) },
         {
             $set: {
                 ...defaults,

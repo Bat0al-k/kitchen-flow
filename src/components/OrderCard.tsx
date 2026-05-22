@@ -24,7 +24,7 @@ export default function OrderCard({ order }: { order: Order }) {
     setActionError(null);
     startTransition(async () => {
       const result = await updateOrderStatus(order._id!.toString(), status);
-      if (result && "error" in result) {
+      if ("error" in result) {
         setActionError(result.error);
         return;
       }
@@ -35,11 +35,7 @@ export default function OrderCard({ order }: { order: Order }) {
   const handleDelete = async () => {
     setActionError(null);
     startTransition(async () => {
-      const result = await deleteOrder(order._id!.toString(), order.status);
-      if (result && "error" in result) {
-        setActionError(result.error);
-        return;
-      }
+      await deleteOrder(order._id!.toString(), order.status);
       router.refresh();
     });
   };

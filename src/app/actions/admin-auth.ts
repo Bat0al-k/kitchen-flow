@@ -6,6 +6,10 @@ import { auth } from "@/auth";
 import { authErrorMessage } from "@/lib/auth-errors";
 import { generateAndDeliverPin, getUsersCollection } from "@/lib/auth-service";
 import { logAction } from "@/lib/audit-log";
+import type {
+    ActionResult,
+    ApprovePinResetResult,
+} from "@/types/action-results";
 
 async function requireAdmin() {
     const session = await auth();
@@ -46,7 +50,9 @@ export async function listPinResetRequests() {
     return enriched;
 }
 
-export async function approvePinReset(requestId: string) {
+export async function approvePinReset(
+    requestId: string
+): Promise<ApprovePinResetResult> {
     const admin = await requireAdmin();
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
@@ -121,7 +127,7 @@ export async function approvePinReset(requestId: string) {
     };
 }
 
-export async function rejectPinReset(requestId: string) {
+export async function rejectPinReset(requestId: string): Promise<ActionResult> {
     const admin = await requireAdmin();
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
@@ -142,7 +148,10 @@ export async function rejectPinReset(requestId: string) {
     return { success: true };
 }
 
-export async function removeUserDevice(targetUserId: string, deviceId: string) {
+export async function removeUserDevice(
+    targetUserId: string,
+    deviceId: string
+): Promise<ActionResult> {
     const admin = await requireAdmin();
     const users = await getUsersCollection();
     const user = await users.findOne({ _id: new ObjectId(targetUserId) });
@@ -161,7 +170,9 @@ export async function removeUserDevice(targetUserId: string, deviceId: string) {
     return { success: true };
 }
 
-export async function unlockUserAccount(targetUserId: string) {
+export async function unlockUserAccount(
+    targetUserId: string
+): Promise<ActionResult> {
     const admin = await requireAdmin();
     const users = await getUsersCollection();
     await users.updateOne(
