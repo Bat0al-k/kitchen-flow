@@ -120,22 +120,11 @@ export async function getAllOrders(): Promise<Order[]> {
     })) as unknown as Order[];
 }
 
-// export async function updateOrderStatus(id: string, status: Order["status"]) {
-//     const user = await getCurrentUser();
-
-//     // Authorization: Waiters (unauthenticated) can only mark READY -> COMPLETED.
-//     if (status !== "COMPLETED") {
-//         if (!user || (user.role !== "ADMIN" && user.role !== "SHIFT_LEADER")) {
-//             throw new Error("Unauthorized: Only shift leaders or admins can modify cooking workflow.");
-//         }
-//     }
-
 export async function updateOrderStatus(
     id: string,
     status: Order["status"]
 ): Promise<{ success: true } | { error: string }> {
     const user = await getCurrentUser();
-    
 
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
@@ -159,33 +148,36 @@ export async function updateOrderStatus(
     revalidatePath("/orders");
     revalidatePath("/orders/completed");
     revalidatePath("/reports");
+    return { success: true };
 }
 
-export async function deleteOrder(id: string, status: Order["status"]) {
+export async function deleteOrder(
+    id: string,
+    status: Order["status"]
+): Promise<{ success: true } | void> {
     if (status !== "PENDING") return;
 
     const user = await getCurrentUser();
-    if (!user || (user.role !== "ADMIN" && user.role !== "SHIFT_LEADER")) {
-        throw new Error("Unauthorized: Only shift leaders or admins can cancel active orders.");
-    }
+    const performedBy = user ? `${user.email} (${user.role})` : "WAITER";
 
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
 
     await db.collection("orders").updateOne(
         { _id: new ObjectId(id) },
-        { 
-            $set: { 
+        {
+            $set: {
                 status: "CANCELLED",
-                cancelledAt: new Date().toISOString()
-            } 
+                cancelledAt: new Date().toISOString(),
+            },
         }
     );
 
-    await logAction("order cancelled (deleted)", `${user.email} (${user.role})`, id);
+    await logAction("order cancelled (deleted)", performedBy, id);
 
     revalidatePath("/orders");
     revalidatePath("/reports");
+    return { success: true };
 }
 
 export async function archiveOrder(id: string) {
