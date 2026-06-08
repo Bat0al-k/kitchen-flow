@@ -1,0 +1,38 @@
+{
+    "sourceFile": "src/types/user.ts",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 5,
+            "patches": [
+                {
+                    "date": 1780770536257,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1780770541725,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,5 @@\n-export type UserRole = \"ADMIN\" | \"SHIFT_LEADER\" ;\n+export type UserRole = \"ADMIN\" | \"SHIFT_LEADER\" | \"STAFF\";\n export type ShiftType = \"MORNING\" | \"EVENING\" | null;\n \n export interface DbUser {\n     _id: { toString(): string };\n"
+                },
+                {
+                    "date": 1780770547212,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,5 @@\n-export type UserRole = \"ADMIN\" | \"SHIFT_LEADER\" | \"STAFF\";\n+export type UserRole = \"ADMIN\" | \"SHIFT_LEADER\" | \"\";\n export type ShiftType = \"MORNING\" | \"EVENING\" | null;\n \n export interface DbUser {\n     _id: { toString(): string };\n"
+                },
+                {
+                    "date": 1780770563596,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -32,5 +32,6 @@\n \n export const MAX_DEVICES_BY_ROLE: Record<UserRole, number> = {\n     ADMIN: 2,\n     SHIFT_LEADER: 1,\n+    \n };\n"
+                },
+                {
+                    "date": 1780770571552,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -33,5 +33,6 @@\n export const MAX_DEVICES_BY_ROLE: Record<UserRole, number> = {\n     ADMIN: 2,\n     SHIFT_LEADER: 1,\n     WAITER: 1,\n+    KITCHEN: 1,\n };\n"
+                },
+                {
+                    "date": 1780770647049,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,5 @@\n-export type UserRole = \"ADMIN\" | \"SHIFT_LEADER\" | \"WAITER\" | \"KITCHEN\";\n+export type UserRole = \"ADMIN\" | \"SHIFT_LEADER\" | \"WAITER\" ;\n export type ShiftType = \"MORNING\" | \"EVENING\" | null;\n \n export interface DbUser {\n     _id: { toString(): string };\n"
+                }
+            ],
+            "date": 1780770536257,
+            "name": "Commit-0",
+            "content": "export type UserRole = \"ADMIN\" | \"SHIFT_LEADER\" ;\nexport type ShiftType = \"MORNING\" | \"EVENING\" | null;\n\nexport interface DbUser {\n    _id: { toString(): string };\n    name: string;\n    email: string;\n    role: UserRole;\n    shiftType: ShiftType;\n    password: string | null;\n    pinHash: string | null;\n    deviceIds: string[];\n    maxDevices: number;\n    isSetup: boolean;\n    mustSetPin: boolean;\n    pinDeliveryPending: boolean;\n    pinAttempts: number;\n    lastFailedAt?: Date | string;\n    isLockedUntil?: Date | string;\n    requiresAdminReset: boolean;\n    lastSeenOnLoginAt?: Date | string;\n    createdAt: string;\n}\n\nexport interface DeviceFingerprintPayload {\n    userAgent: string;\n    screenSize: string;\n    timezone: string;\n    canvasFingerprint: string;\n    installedFonts: string[];\n}\n\nexport const MAX_DEVICES_BY_ROLE: Record<UserRole, number> = {\n    ADMIN: 2,\n    SHIFT_LEADER: 1,\n};\n"
+        }
+    ]
+}

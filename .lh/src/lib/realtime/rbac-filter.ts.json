@@ -1,0 +1,22 @@
+{
+    "sourceFile": "src/lib/realtime/rbac-filter.ts",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1780924047557,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1780924116951,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,5 @@\n-import { RealtimeEvent, RealtimeEventType } from \"./types\";\n+import { RealtimeEvent } from \"./types\";\n import { UserRole } from \"@/types/user\";\n \n export function filterEventForRole(\n   event: RealtimeEvent,\n"
+                }
+            ],
+            "date": 1780924047557,
+            "name": "Commit-0",
+            "content": "import { RealtimeEvent, RealtimeEventType } from \"./types\";\nimport { UserRole } from \"@/types/user\";\n\nexport function filterEventForRole(\n  event: RealtimeEvent,\n  role: UserRole | \"Waiter\" | null\n): RealtimeEvent | null {\n  const { type } = event;\n  // Unauthenticated / Waiter mode\n  const isWaiter = !role || (typeof role === \"string\" && role.toLowerCase() === \"waiter\");\n  if (isWaiter) {\n    // Waiters can only view order events (created, status changes, cancelled).\n    // They cannot view shift events or live manager activity metrics.\n    if (\n      type === \"order:created\" ||\n      type === \"order:status-changed\" ||\n      type === \"order:cancelled\"\n    ) {\n      return event;\n    }\n    return null;\n  }\n\n  // Shift Leaders and Admins have full access to order updates, shift statuses, and live statistics\n  if (role === \"SHIFT_LEADER\" || role === \"ADMIN\") {\n    return event;\n  }\n\n  return null;\n}\n\nexport function filterBatchForRole(\n  batch: RealtimeEvent[],\n  role: UserRole | \"Waiter\"\n): RealtimeEvent[] {\n  return batch\n    .map((event) => filterEventForRole(event, role))\n    .filter((event): event is RealtimeEvent => event !== null);\n}\n"
+        }
+    ]
+}

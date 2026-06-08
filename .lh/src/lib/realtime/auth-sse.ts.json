@@ -1,0 +1,34 @@
+{
+    "sourceFile": "src/lib/realtime/auth-sse.ts",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 4,
+            "patches": [
+                {
+                    "date": 1780770706876,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1780770712148,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,9 +3,9 @@\n \n export interface SseAuthResult {\n   isAuthenticated: boolean;\n   userId: string | null;\n-  role: UserRole | ;\n+  role: UserRole | \"W\";\n   email: string | null;\n }\n \n export async function authenticateSse(): Promise<SseAuthResult> {\n"
+                },
+                {
+                    "date": 1780770718598,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,9 +3,9 @@\n \n export interface SseAuthResult {\n   isAuthenticated: boolean;\n   userId: string | null;\n-  role: UserRole | \"W\";\n+  role: UserRole | \"Waiter\";\n   email: string | null;\n }\n \n export async function authenticateSse(): Promise<SseAuthResult> {\n"
+                },
+                {
+                    "date": 1780770728571,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -15,9 +15,9 @@\n     if (!session || !session.user) {\n       return {\n         isAuthenticated: false,\n         userId: null,\n-        role: null,\n+        role: \"Waiter\",\n         email: null,\n       };\n     }\n \n"
+                },
+                {
+                    "date": 1780770734799,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -23,17 +23,17 @@\n \n     return {\n       isAuthenticated: true,\n       userId: session.user.id || null,\n-      role: (session.user.role as UserRole) || null,\n+      role: (session.user.role as UserRole) || \"Waiter\",\n       email: session.user.email || null,\n     };\n   } catch (error) {\n     console.error(\"[SseAuth] Error during SSE authentication:\", error);\n     return {\n       isAuthenticated: false,\n       userId: null,\n-      role: null,\n+      role: \"Waiter\",\n       email: null,\n     };\n   }\n }\n"
+                }
+            ],
+            "date": 1780770706876,
+            "name": "Commit-0",
+            "content": "import { auth } from \"@/auth\";\nimport { UserRole } from \"@/types/user\";\n\nexport interface SseAuthResult {\n  isAuthenticated: boolean;\n  userId: string | null;\n  role: UserRole | ;\n  email: string | null;\n}\n\nexport async function authenticateSse(): Promise<SseAuthResult> {\n  try {\n    const session = await auth();\n\n    if (!session || !session.user) {\n      return {\n        isAuthenticated: false,\n        userId: null,\n        role: null,\n        email: null,\n      };\n    }\n\n    return {\n      isAuthenticated: true,\n      userId: session.user.id || null,\n      role: (session.user.role as UserRole) || null,\n      email: session.user.email || null,\n    };\n  } catch (error) {\n    console.error(\"[SseAuth] Error during SSE authentication:\", error);\n    return {\n      isAuthenticated: false,\n      userId: null,\n      role: null,\n      email: null,\n    };\n  }\n}\n"
+        }
+    ]
+}

@@ -98,3 +98,49 @@ body {
 .animate-shadow{
  animation:shadow 1.7s infinite;
 }
+
+@keyframes flashGold {
+  0%, 100% { border-color: rgba(63, 63, 70, 0.4); box-shadow: none; }
+  50% { border-color: rgba(234, 179, 8, 0.8); box-shadow: 0 0 15px rgba(234, 179, 8, 0.3); }
+}
+
+@keyframes flashBlue {
+  0%, 100% { border-color: rgba(63, 63, 70, 0.4); box-shadow: none; }
+  50% { border-color: rgba(59, 130, 246, 0.8); box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
+}
+
+@keyframes flashGreen {
+  0%, 100% { border-color: rgba(63, 63, 70, 0.4); box-shadow: none; }
+  50% { border-color: rgba(16, 185, 129, 0.8); box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes toastProgress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+.animate-flashGold {
+  animation: flashGold 1.5s ease-in-out infinite;
+}
+
+.animate-flashBlue {
+  animation: flashBlue 1.5s ease-in-out infinite;
+}
+
+.animate-flashGreen {
+  animation: flashGreen 1.5s ease-in-out infinite;
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-toastProgress {
+  animation: toastProgress 5s linear forwards;
+}
+
